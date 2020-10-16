@@ -1,0 +1,59 @@
+plugins {
+	id 'java'
+	id 'org.springframework.boot' version "$springBootVersion"
+	id 'io.spring.dependency-management' version "$springDependencyManagementGradlePluginVersion"
+}
+
+group = appGroup
+version = appVersion
+
+sourceCompatibility = property('sourceCompatibility')
+targetCompatibility = property('targetCompatibility')
+
+repositories {
+	mavenCentral()
+}
+
+sourceSets {
+	testIntegration {
+		compileClasspath += sourceSets.main.output
+		runtimeClasspath += sourceSets.main.output
+	}
+}
+
+configurations {
+	testIntegrationImplementation.extendsFrom implementation
+	testIntegrationRuntimeOnly.extendsFrom runtimeOnly
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation "org.projectlombok:lombok:$lombokVersion"
+	annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+
+	// test
+	testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
+	testImplementation "org.mockito:mockito-core:$mockitoVersion"
+
+	// testIntegration
+	testIntegrationImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+}
+
+test {
+	useJUnitPlatform()
+}
+
+task integrationTest(type: Test) {
+	description = 'Runs integration tests.'
+	group = 'verification'
+
+	testClassesDirs = sourceSets.testIntegration.output.classesDirs
+	classpath = sourceSets.testIntegration.runtimeClasspath
+
+	useJUnitPlatform()
+	shouldRunAfter test
+}
+
+check.dependsOn integrationTest
