@@ -1,0 +1,16 @@
+plugins {
+	id 'java-library'
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation "org.projectlombok:lombok:$lombokVersion"
+	annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+
+	testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
+	testImplementation "org.mockito:mockito-core:$mockitoVersion"
+}
+
+test {
+	useJUnitPlatform()
+}

@@ -1,0 +1,36 @@
+plugins {
+	id 'org.springframework.boot' version "$springBootVersion" apply false
+	id 'io.spring.dependency-management' version "$springDependencyManagementGradlePluginVersion"
+}
+
+repositories {
+	mavenCentral()
+}
+
+subprojects {
+	group = appGroup
+	version = appVersion
+
+	sourceCompatibility = property('sourceCompatibility')
+	targetCompatibility = property('targetCompatibility')
+
+	repositories {
+		mavenCentral()
+	}
+
+	apply plugin: 'io.spring.dependency-management'
+
+	// while the main application uses the complete spring boot plugin...
+	project(':server:application') {
+		apply plugin: 'org.springframework.boot'
+	}
+
+	// .. the other layers should just use the dependency management of spring boot
+	plugins.withType(JavaLibraryPlugin) {
+		dependencies {
+			// see https://docs.spring.io/spring-boot/docs/current/gradle-plugin/reference/html/#managing-dependencies-dependency-management-plugin-using-in-isolation
+			// noinspection UnnecessaryQualifiedReference
+			implementation platform(org.springframework.boot.gradle.plugin.SpringBootPlugin.BOM_COORDINATES)
+		}
+	}
+}

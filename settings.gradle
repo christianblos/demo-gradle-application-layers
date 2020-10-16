@@ -1,0 +1,5 @@
+rootProject.name = appName
+
+include ':server:application'
+include ':server:domain'
+include ':server:adapter'

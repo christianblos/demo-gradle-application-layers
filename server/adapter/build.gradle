@@ -1,0 +1,10 @@
+plugins {
+	id 'java-library'
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation project(':server:domain')
+
+	testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
+}

@@ -1,0 +1,48 @@
+plugins {
+	id 'java'
+}
+
+sourceSets {
+	testIntegration {
+		compileClasspath += sourceSets.main.output
+		runtimeClasspath += sourceSets.main.output
+	}
+}
+
+configurations {
+	testIntegrationImplementation.extendsFrom implementation
+	testIntegrationRuntimeOnly.extendsFrom runtimeOnly
+}
+
+dependencies {
+	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation project(':server:domain')
+	implementation project(':server:adapter')
+
+	implementation "org.projectlombok:lombok:$lombokVersion"
+	annotationProcessor 'org.projectlombok:lombok'
+
+	testImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+	testIntegrationImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+}
+
+task integrationTest(type: Test) {
+	description = 'Runs integration tests.'
+	group = 'verification'
+
+	testClassesDirs = sourceSets.testIntegration.output.classesDirs
+	classpath = sourceSets.testIntegration.runtimeClasspath
+
+	useJUnitPlatform()
+	shouldRunAfter test
+}
+
+check.dependsOn integrationTest
+
+test {
+	useJUnitPlatform()
+}
