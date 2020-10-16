@@ -1,0 +1,100 @@
+plugins {
+	id 'java'
+	id 'application'
+	id 'org.springframework.boot' version "$springBootVersion"
+	id 'io.spring.dependency-management' version "$springDependencyManagementGradlePluginVersion"
+}
+
+group = appGroup
+version = appVersion
+mainClassName = 'com.example.demo.application.DemoApplication'
+
+sourceCompatibility = property('sourceCompatibility')
+targetCompatibility = property('targetCompatibility')
+
+repositories {
+	mavenCentral()
+}
+
+sourceSets {
+	domain
+
+	adapter {
+		compileClasspath += domain.output
+		runtimeClasspath += domain.output
+	}
+
+	application {
+		compileClasspath += domain.output + adapter.output
+		runtimeClasspath += domain.output + adapter.output
+	}
+
+	test {
+		compileClasspath += domain.output
+		runtimeClasspath += domain.output
+	}
+
+	testIntegration {
+		compileClasspath += application.output + domain.output + adapter.output
+		runtimeClasspath += application.output + domain.output + adapter.output
+	}
+}
+
+configurations {
+	// domain
+	domainImplementation.extendsFrom implementation
+	domainRuntimeOnly.extendsFrom runtimeOnly
+	domainAnnotationProcessor.extendsFrom annotationProcessor
+
+	// adapter
+	adapterImplementation.extendsFrom implementation
+	adapterRuntimeOnly.extendsFrom runtimeOnly
+	adapterAnnotationProcessor.extendsFrom annotationProcessor
+
+	// application
+	applicationImplementation.extendsFrom implementation
+	applicationRuntimeOnly.extendsFrom runtimeOnly
+	applicationAnnotationProcessor.extendsFrom annotationProcessor
+
+	// integration tests
+	testIntegrationImplementation.extendsFrom applicationImplementation
+	testIntegrationRuntimeOnly.extendsFrom applicationRuntimeOnly
+	testIntegrationAnnotationProcessor.extendsFrom applicationAnnotationProcessor
+}
+
+dependencies {
+	// general dependencies for all source sets
+	implementation 'org.springframework.boot:spring-boot-starter'
+	implementation "org.projectlombok:lombok:$lombokVersion"
+	annotationProcessor "org.projectlombok:lombok:$lombokVersion"
+
+	// application
+	applicationAnnotationProcessor "org.projectlombok:lombok:$lombokVersion"
+	applicationImplementation 'org.springframework.boot:spring-boot-starter-web'
+
+	// test
+	testImplementation "org.junit.jupiter:junit-jupiter:$junitVersion"
+	testImplementation "org.mockito:mockito-core:$mockitoVersion"
+
+	// testIntegration
+	testIntegrationImplementation('org.springframework.boot:spring-boot-starter-test') {
+		exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+	}
+}
+
+test {
+	useJUnitPlatform()
+}
+
+task integrationTest(type: Test) {
+	description = 'Runs integration tests.'
+	group = 'verification'
+
+	testClassesDirs = sourceSets.testIntegration.output.classesDirs
+	classpath = sourceSets.testIntegration.runtimeClasspath
+
+	useJUnitPlatform()
+	shouldRunAfter test
+}
+
+check.dependsOn integrationTest
